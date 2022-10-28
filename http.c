@@ -196,5 +196,9 @@ int UrlDecode(char *buf, int blen, const char *src, int slen)
 
 bool ParseRangeHeader(const char* content, struct RequestRange* ptr) {
   int ret = sscanf(content, "bytes=%llu-%llu", &ptr->start, &ptr->end);
+  if (ret == 1) {
+    ptr->end = 0x3FFFFFFFFFFFFFFFull;
+    ret++;
+  }
   return ret == 2;
 }

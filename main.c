@@ -86,7 +86,7 @@ void ServeFile(struct MyStream* stream, const char* uri, struct RequestRange* ra
     type = "Content-Type: application/octet-stream\r\n";
   }
   char range_buf[100];
-  snprintf(range_buf, sizeof(range_buf), "Content-Range: bytes %llu-%llu/%llu", start, end - 1, st.st_size);
+  snprintf(range_buf, sizeof(range_buf), "Content-Range: bytes %llu-%llu/%llu\r\n", start, end - 1, st.st_size);
 
   const char * nl = "\r\n";
   WriteString(stream, head);
@@ -150,7 +150,7 @@ int main() {
   server_sock_addr.sin_port = htons(8989);
 
   if ((bind(server_sock_fd, (const struct sockaddr *) &server_sock_addr, sizeof(server_sock_addr))) != 0) {
-    perror("socket bind failed...\n");
+    perror("socket bind failed");
     return 1;
   }
 
