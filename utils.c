@@ -2,7 +2,7 @@
 // Created by 田韵豪 on 2022/10/28.
 //
 
-#include <sys/syslimits.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <string.h>
 #include "utils.h"

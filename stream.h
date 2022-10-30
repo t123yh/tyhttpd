@@ -2,8 +2,8 @@
 // Created by 田韵豪 on 2022/10/28.
 //
 
-#ifndef MYHTTPD_STREAM_H
-#define MYHTTPD_STREAM_H
+#ifndef TYHTTPD_STREAM_H
+#define TYHTTPD_STREAM_H
 
 #include <string.h>
 
@@ -29,4 +29,4 @@ inline static ssize_t WriteString(struct MyStream* stream, const char* str) {
   return stream->write(stream, str, strlen(str));
 }
 
-#endif //MYHTTPD_STREAM_H
+#endif //TYHTTPD_STREAM_H

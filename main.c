@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/syslimits.h>
+#include <limits.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/fcntl.h>
@@ -78,7 +78,7 @@ void ServeFile(struct MyStream* stream, const char* uri, struct RequestRange* ra
   const char * head = range ? "HTTP/1.1 206 Partial Content\r\n" : "HTTP/1.1 200 OK\r\n";
   const char * acpt_rng = "Accept-Ranges: bytes\r\n";
   char len_buf[100];
-  snprintf(len_buf, sizeof(len_buf), "Content-Length: %llu\r\n", end - start);
+  snprintf(len_buf, sizeof(len_buf), "Content-Length: %ld\r\n", end - start);
   const char * type;
   if (StringEndsWith(canon_path, ".htm") || StringEndsWith(canon_path, ".html")) {
     type = "Content-Type: text/html\r\n";
@@ -86,7 +86,7 @@ void ServeFile(struct MyStream* stream, const char* uri, struct RequestRange* ra
     type = "Content-Type: application/octet-stream\r\n";
   }
   char range_buf[100];
-  snprintf(range_buf, sizeof(range_buf), "Content-Range: bytes %llu-%llu/%llu\r\n", start, end - 1, st.st_size);
+  snprintf(range_buf, sizeof(range_buf), "Content-Range: bytes %ld-%ld/%ld\r\n", start, end - 1, st.st_size);
 
   const char * nl = "\r\n";
   WriteString(stream, head);

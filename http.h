@@ -2,10 +2,11 @@
 // Created by 田韵豪 on 2022/10/28.
 //
 
-#ifndef MYHTTPD_HTTP_H
-#define MYHTTPD_HTTP_H
+#ifndef TYHTTPD_HTTP_H
+#define TYHTTPD_HTTP_H
 
 #include "stream.h"
+#include <stdint.h>
 #include <stdbool.h>
 
 #define MAX_SHORT_LEN 30
@@ -35,4 +36,4 @@ struct RequestRange {
 bool ParseRangeHeader(const char* content, struct RequestRange* ptr);
 
 
-#endif //MYHTTPD_HTTP_H
+#endif //TYHTTPD_HTTP_H
