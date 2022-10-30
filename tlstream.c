@@ -83,14 +83,14 @@ static ssize_t tls_write(struct MyStream *stream, const void *buffer, size_t siz
 
 static void tls_close(struct MyStream *stream)
 {
-  // SSL *ssl = tls_accept(stream);
-  // ssl_stream_priv *priv = stream->priv;
-  // SSL_shutdown(ssl);
-  // SSL_free(ssl);
-  // close(priv->fd);
-  // SSL_CTX_free(priv->ssl);
-  // free(priv);
-  // free(stream);
+  SSL *ssl = tls_accept(stream);
+  ssl_stream_priv *priv = stream->priv;
+  SSL_shutdown(ssl);
+  SSL_free(ssl);
+  close(priv->fd);
+  SSL_CTX_free(priv->ssl);
+  free(priv);
+  free(stream);
 }
 
 struct MyStream *InitTlsStream(int fd)
