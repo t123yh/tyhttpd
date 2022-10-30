@@ -58,39 +58,52 @@ SSL *tls_accept(struct MyStream *stream)
     int err = SSL_get_error(ssl, ret);
     if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
     {
-      return NULL;
+      return stream->userdata=ctx;
     }
     else
     {
       ERR_print_errors_fp(stderr);
-      return NULL;
+      return stream->userdata=ctx;
     }
   }
-  return stream->userdata=ssl;
-}
-
-static ssize_t tls_read(struct MyStream *stream, void *buffer, size_t size)
-{
-  SSL *ssl = tls_accept(stream);
-  return SSL_read(ssl, buffer, size);
-}
-
-static ssize_t tls_write(struct MyStream *stream, const void *buffer, size_t size)
-{
-  SSL *ssl = tls_accept(stream);
-  return SSL_write(ssl, buffer, size);
+  return stream->userdata = ssl;
 }
 
 static void tls_close(struct MyStream *stream)
 {
   SSL *ssl = tls_accept(stream);
   ssl_stream_priv *priv = stream->priv;
-  SSL_shutdown(ssl);
-  SSL_free(ssl);
+  if (ssl != NULL && ssl != priv->ssl)
+  {
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+  }
   close(priv->fd);
   SSL_CTX_free(priv->ssl);
   free(priv);
   free(stream);
+}
+
+static ssize_t tls_read(struct MyStream *stream, void *buffer, size_t size)
+{
+  SSL *ssl = tls_accept(stream);
+  if (ssl == NULL)
+  {
+    tls_close(stream);
+    return -1;
+  }
+  return SSL_read(ssl, buffer, size);
+}
+
+static ssize_t tls_write(struct MyStream *stream, const void *buffer, size_t size)
+{
+  SSL *ssl = tls_accept(stream);
+  if (ssl == NULL)
+  {
+    tls_close(stream);
+    return -1;
+  }
+  return SSL_write(ssl, buffer, size);
 }
 
 struct MyStream *InitTlsStream(int fd)

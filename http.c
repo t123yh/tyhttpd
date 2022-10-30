@@ -32,7 +32,11 @@ struct HttpRequest* ParseRequest(struct MyStream* stream) {
   enum HttpParserStatus status = kMethod;
   for(;;) {
     ssize_t amount = stream->read(stream, buffer, kBufferSize);
-
+    if (amount <= 0) {
+      free(buffer);
+      free(req);
+      return NULL;
+    }
     for (int i = 0; i < amount; i++) {
       uint8_t current = buffer[i];
       switch(status) {

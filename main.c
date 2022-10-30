@@ -37,6 +37,17 @@ void Send400(struct MyStream *stream)
   WriteString(stream, nl);
 }
 
+void Send301(struct MyStream *stream, const char *url)
+{
+  const char *head = "HTTP/1.1 301 Moved Permanently\r\n";
+  char location_buf[100];
+  snprintf(location_buf, sizeof(location_buf), "Location: %s\r\n", url);
+  const char *nl = "\r\n";
+  WriteString(stream, head);
+  WriteString(stream, location_buf);
+  WriteString(stream, nl);
+}
+
 void ServeFile(struct MyStream *stream, const char *uri, struct RequestRange *range)
 {
   if (strcmp(uri, "/") == 0)
@@ -137,8 +148,15 @@ void *ConnectionHandler(void *arg)
 
   bool has_range = false;
   struct RequestRange range;
+  char* host;
 
   struct HttpRequest *req = ParseRequest(stream);
+  if (!req)
+  {
+    fprintf(stderr, "Failed to parse request\n");
+    goto cleanup_stream;
+  }
+  
   printf("Method: %s\n", req->method);
   printf("Uri: %s\n", req->uri);
   for (struct HttpHeader *cur = req->headers; cur; cur = cur->next)
@@ -148,10 +166,25 @@ void *ConnectionHandler(void *arg)
     {
       has_range = ParseRangeHeader(cur->value, &range);
     }
+    if (strcmp(cur->name, "Host") == 0)
+    {
+      host = cur->value;
+    }
   }
 
-  ServeFile(stream, req->uri, has_range ? &range : NULL);
+  if (stream->userdata == NULL)
+  {
+    char new_url[MAX_LEN];
+    snprintf(new_url, sizeof(new_url), "https://%s%s",host, req->uri);
+    printf("Redirecting to %s", new_url);
+    Send301(stream, new_url);
+  }
+  else
+  {
+    ServeFile(stream, req->uri, has_range ? &range : NULL);
+  }
   FreeRequest(req);
+cleanup_stream:
   stream->destroy(stream);
   return NULL;
 }
@@ -161,7 +194,7 @@ void bind_http_port(int *sock_fd, struct sockaddr_in *sock_addr)
   *sock_fd = socket(AF_INET, SOCK_STREAM, 0);
   sock_addr->sin_addr.s_addr = INADDR_ANY;
   sock_addr->sin_family = AF_INET;
-  sock_addr->sin_port = htons(8080);
+  sock_addr->sin_port = htons(80);
 
   if ((bind(*sock_fd, (const struct sockaddr *)sock_addr, sizeof(*sock_addr))) != 0)
   {
@@ -175,7 +208,7 @@ void bind_https_port(int *sock_fd, struct sockaddr_in *sock_addr)
   *sock_fd = socket(AF_INET, SOCK_STREAM, 0);
   sock_addr->sin_addr.s_addr = INADDR_ANY;
   sock_addr->sin_family = AF_INET;
-  sock_addr->sin_port = htons(8443);
+  sock_addr->sin_port = htons(443);
 
   if ((bind(*sock_fd, (const struct sockaddr *)sock_addr, sizeof(*sock_addr))) != 0)
   {

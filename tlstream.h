@@ -9,11 +9,11 @@
 struct MyStream *InitTlsStream(int fd);
 
 #ifndef CERT_FILE
-#define CERT_FILE "server.crt"
+#define CERT_FILE "keys/cnlab.cert"
 #endif
 
 #ifndef KEY_FILE
-#define KEY_FILE "server.key"
+#define KEY_FILE "keys/cnlab.prikey"
 #endif
 
 typedef struct ssl_stream_priv

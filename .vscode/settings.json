@@ -5,6 +5,7 @@
         "string.h": "c",
         "err.h": "c",
         "stream.h": "c",
-        "inet.h": "c"
+        "inet.h": "c",
+        "*.tcc": "c"
     }
 }
