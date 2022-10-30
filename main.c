@@ -138,6 +138,7 @@ void* ConnectionHandler(void *arg) {
 }
 
 int main() {
+  printf("Thank you for using tyhttpd!\n");
   signal(SIGPIPE, SIG_IGN);
   int server_sock_fd, client_sock_fd;
   struct sockaddr_in server_sock_addr;
