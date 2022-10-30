@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "ssl.h": "c",
+        "cstdlib": "c",
+        "string.h": "c",
+        "err.h": "c",
+        "stream.h": "c",
+        "inet.h": "c"
+    }
+}

@@ -23,7 +23,6 @@ struct MyStream {
 };
 
 struct MyStream* InitTcpStream(int fd);
-// TODO: struct MyStream* InitTlsStream(int fd);
 
 inline static ssize_t WriteString(struct MyStream* stream, const char* str) {
   return stream->write(stream, str, strlen(str));
