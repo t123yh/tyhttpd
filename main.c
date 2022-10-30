@@ -172,8 +172,9 @@ int main() {
 
     char clientName[30];
 
-    printf("Accepted connection from %s\n", inet_ntop(AF_INET, &client_addr_storage,
-                                                      clientName, sizeof(clientName)));
+    struct sockaddr_in* addr = (struct sockaddr_in*)&client_addr_storage;
+    printf("Accepted connection from %s:%d\n", inet_ntop(AF_INET, &addr->sin_addr,
+                                                      clientName, sizeof(clientName)), addr->sin_port);
 
     struct MyStream *http_stream = InitTcpStream(client_sock_fd);
 
