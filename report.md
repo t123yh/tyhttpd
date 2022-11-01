@@ -39,3 +39,23 @@ struct MyStream {
 如果确定为`HTTP`请求，只需要依据`header`中的`$host`及`$uri`拼接成`https://$host$uri`进行重定向即可完成。
 
 ## MinNet测试
+
+### 基本功能测试
+
+![HTTP基本功能检查](./pics/http_check.png)
+
+可以看到，在`mininet`环境中，程序可以正常运行通过测试脚本，没有新报错。并且在遇到未找到的文件时，程序会在日志中记录`404`错误。
+
+![VLC视频播放检查](./pics/mp4play.png)
+
+可以看到，从`mininet`环境中打开的`VLC`可以正常播放`jojobible.mp4`视频文件，并且可以拖动进度条。
+
+### HTTP 传输分析
+
+![HTTP传输分析](./pics/http_part.png)
+
+### HTTPS 传输分析
+
+![TLS握手](./pics/vlc%20handshake.png)
+
+![HTTPS数据流](./pics/https-2pack.png)
