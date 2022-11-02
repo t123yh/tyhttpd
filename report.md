@@ -54,8 +54,32 @@ struct MyStream {
 
 ![HTTP传输分析](./pics/http_part.png)
 
+实际上因为`TCP`流式传输的特性，针对大部分传输的`TCP`包，`wireshark`并不能将其识别为`HTTP`数据包，而只是作为普通的`TCP`流处理。尽管我们可以使用`wireshark`的`HTTP`过滤器，但是由于`wireshark`的`HTTP`过滤器并不是基于`HTTP`协议的语法进行过滤的，而是基于`TCP`流的特征进行过滤的，因此会导致一些`HTTP`数据包被过滤掉。如图所示，我们只得到了一些请求与响应的`HTTP`头部信息，而没有得到`HTTP`的实体内容。
+
+但尽管如此，我们仍然可以看到 `Content-Length` 字段，以及 `Content-Type`，`Content-Range` 字段，这些字段可以帮助我们判断出响应的实体内容的类型，长度以及位置。
+
 ### HTTPS 传输分析
 
 ![TLS握手](./pics/vlc%20handshake.png)
 
+我们可以发现，当`TCP`握手完成后，`TLS`客户端与服务器之间会进行`TLS`握手，`TLS`握手完成后，`TLS`客户端与服务器之间就可以进行经过`tls`加密的`HTTP`请求与响应了。
+
+`TLS`的握手过程为：
+1. 客户端发送`ClientHello`，包含`TLS`版本号，客户端支持的`cipher suite`，`compression method`等信息。
+2. 服务器发送`ServerHello`，包含`TLS`版本号，服务器选择的`cipher suite`，`compression method`等信息。
+3. 服务器发送`Certificate`，包含服务器的证书。
+4. 服务器发送`ServerHelloDone`，表示`ServerHello`发送完毕。
+5. 客户端发送`CertificateVerify`，包含客户端的证书。
+6. 客户端发送`ClientKeyExchange`，包含客户端生成的`pre-master secret`。
+7. 客户端发送`ChangeCipherSpec`，表示客户端的`cipher suite`已经改变。
+8. 客户端发送`Finished`，表示客户端的`TLS`握手已经完成。
+9. 服务器发送`ChangeCipherSpec`，表示服务器的`cipher suite`已经改变。
+10. 服务器发送`Finished`，表示服务器的`TLS`握手已经完成。
+
+握手过程中由于`TCP`流特征，多个包会合并，因此我们在`wireshark`中看到的`TLS`握手包是合并在一起的。
+
 ![HTTPS数据流](./pics/https-2pack.png)
+
+我们可以看到，`TLS`握手完成后，`TLS`客户端与服务器之间就可以进行经过`tls`加密的`HTTP`请求与响应了。由于`TLS`加密的特性，我们无法直接看到`HTTP`的`Header&Payload`内容。
+
+但尽管如此，我们仍然可以发现`HTTPS`数据流使用的协议是`TLSv1.2`，并且一段`Payload`会因为`MTU`的限制被分成多个`TCP`包发送，不同段的`Payload`可能被组装到同一个`TCP`包中。
