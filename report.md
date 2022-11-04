@@ -1,6 +1,50 @@
 # 计算机网络实验报告
+小组成员：田韵豪 202218013229065，谢云龙 XXXX
 
-## HTTPS 实现
+## TCP 流实现
+
+由于服务器需要处理 HTTP 明文请求和 HTTPS 加密请求，因此编写了一个 `MyStream` 结构体（位于 `stream.h` 文件中），结构体中提供了 3 个函数指针 `read`、`write`、`destroy`。在初始化流时，只需要将这些函数指针赋值为该流对应的操作函数，使用者就可以用一套统一的接口来读写流。
+
+## HTTP 头解析实现
+
+在 `http.c` 中实现了对 HTTP 头部的解析。解析使用一个状态机实现，状态机包含以下状态：
+
+```C
+enum HttpParserStatus {
+  kMethod,
+  kUri,
+  kVersion,
+  kHeaderName,
+  kHeaderValue,
+  kEnding,
+};
+```
+
+状态机执行时，每次从流中读取一个块，然后对块中的数据逐字节进行分析。在状态内转移的条件是遇到字母或数字；在状态间转移的条件则是符号（冒号、换行或空格）。状态机还实现了一定的错误处理，如果收到了错误的请求头，会进行报错。
+
+状态机解析结果保存在 `HttpRequest` 结构中，其字段如下，包含 HTTP 请求的方法、URI、各个请求头。外部代码获得头部的解析结果后，即可进行请求的处理。
+
+```C
+struct HttpHeader {
+char name[MAX_SHORT_LEN];
+char value[MAX_LEN];
+struct HttpHeader* next;
+};
+
+struct HttpRequest {
+char method[10];
+char uri[MAX_LEN];
+struct HttpHeader* headers;
+};
+```
+
+## 响应文件的发送
+解析完请求头部后，程序调用 `ServeFile` 函数来发送响应。`ServeFile` 会先对请求进行 URL 解码，还原出请求中可能存在的特殊符号，然后根据当前目录路径和 URI 整合出请求文件的路径，并检查路径的合法性。如果请求文件不存在，则返回 404；如果文件存在，则打开文件，并根据是否有 Range 信息来调整文件流的位置。最后，使用 while 循环读取文件并发送。发送完后，断开连接。
+
+## 部分内容（Partial Content）的处理
+程序会根据请求是否存在 `Range` 头部分别进行处理。如果 `Range` 头部不存在，则返回完整文件内容，并增加 `Accept-Ranges: bytes` 响应头，告知客户端支持范围请求；如果 `Range` 存在，则根据该头部的内容设定响应文件的开头位置和结尾位置。
+
+## TLS 实现
 
 `HttpsStream`基于`MyStream`结构体实现，具体拓扑如下：
 
