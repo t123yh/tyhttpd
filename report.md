@@ -1,22 +1,24 @@
-# 计算机网络实验报告
-小组成员：田韵豪 202218013229065，谢云龙 XXXX
+# 计算机网络实验报告 - 实验五 HTTP 服务器实验
+小组成员：谢云龙 202218013229040，田韵豪 202218013229065
 
 ## TCP 流实现
 
 由于服务器需要处理 HTTP 明文请求和 HTTPS 加密请求，因此编写了一个 `MyStream` 结构体（位于 `stream.h` 文件中），结构体中提供了 3 个函数指针 `read`、`write`、`destroy`。在初始化流时，只需要将这些函数指针赋值为该流对应的操作函数，使用者就可以用一套统一的接口来读写流。
 
+对于普通的 TCP 流，`read` 和 `write` 函数直接调用对应的 syscall 函数，并传递 TCP 流的文件描述符作为参数。对于 TLS 流，程序调用 OpenSSL 库封装的对应函数，详见以下“TLS 实现”一节。
+
 ## HTTP 头解析实现
 
-在 `http.c` 中实现了对 HTTP 头部的解析。解析使用一个状态机实现，状态机包含以下状态：
+在 `http.c` 中实现了对 HTTP 头部的解析。解析使用一个状态机实现，状态机包含以下状态，每个状态的含义在注释中描述：
 
 ```C
 enum HttpParserStatus {
-  kMethod,
-  kUri,
-  kVersion,
-  kHeaderName,
-  kHeaderValue,
-  kEnding,
+  kMethod,         // 正在读取请求的 HTTP 方法
+  kUri,            // 正在读取请求的 URI
+  kVersion,        // 正在读取请求的 HTTP 版本
+  kHeaderName,     // 正在读取请求头的名称
+  kHeaderValue,    // 正在读取请求头的值
+  kEnding,         // 正在读取请求末尾的换行符
 };
 ```
 
@@ -26,15 +28,15 @@ enum HttpParserStatus {
 
 ```C
 struct HttpHeader {
-char name[MAX_SHORT_LEN];
-char value[MAX_LEN];
-struct HttpHeader* next;
+  char name[MAX_SHORT_LEN];
+  char value[MAX_LEN];
+  struct HttpHeader* next;
 };
 
 struct HttpRequest {
-char method[10];
-char uri[MAX_LEN];
-struct HttpHeader* headers;
+  char method[10];
+  char uri[MAX_LEN];
+  struct HttpHeader* headers;
 };
 ```
 
